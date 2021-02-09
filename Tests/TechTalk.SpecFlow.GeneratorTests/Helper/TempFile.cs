@@ -17,7 +17,7 @@ namespace TechTalk.SpecFlow.GeneratorTests.Helper
 
         public TempFile(string extension)
         {
-            _tmpfile = Path.GetTempFileName();
+            _tmpfile = GetTempFileName();
             if (!string.IsNullOrEmpty(extension))
             {
                 string newTmpFile = _tmpfile + extension;
@@ -30,6 +30,11 @@ namespace TechTalk.SpecFlow.GeneratorTests.Helper
                 // use new tmp-File
                 _tmpfile = newTmpFile;
             }
+        }
+
+        private static string GetTempFileName()
+        {
+            return Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         }
 
         public void SetContent(string fileContent)
@@ -62,7 +67,7 @@ namespace TechTalk.SpecFlow.GeneratorTests.Helper
                 if (!string.IsNullOrEmpty(_tmpfile) && File.Exists(_tmpfile))
                     File.Delete(_tmpfile);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex, "TempFile.Dispose");
             }
