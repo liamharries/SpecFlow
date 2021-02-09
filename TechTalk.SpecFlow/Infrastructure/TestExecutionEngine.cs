@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using BoDi;
 using Io.Cucumber.Messages;
+using TechTalk.SpecFlow.Analytics;
 using TechTalk.SpecFlow.Bindings;
 using TechTalk.SpecFlow.Bindings.Reflection;
 using TechTalk.SpecFlow.CommonModels;
@@ -12,6 +13,7 @@ using TechTalk.SpecFlow.Compatibility;
 using TechTalk.SpecFlow.Configuration;
 using TechTalk.SpecFlow.CucumberMessages;
 using TechTalk.SpecFlow.ErrorHandling;
+using TechTalk.SpecFlow.Plugins;
 using TechTalk.SpecFlow.Tracing;
 using TechTalk.SpecFlow.UnitTestProvider;
 
@@ -32,11 +34,14 @@ namespace TechTalk.SpecFlow.Infrastructure
         private readonly SpecFlowConfiguration _specFlowConfiguration;
         private readonly IStepArgumentTypeConverter _stepArgumentTypeConverter;
         private readonly IStepDefinitionMatchService _stepDefinitionMatchService;
-        private readonly IStepErrorHandler[] _stepErrorHandlers;
         private readonly IStepFormatter _stepFormatter;
         private readonly ITestObjectResolver _testObjectResolver;
         private readonly ITestTracer _testTracer;
         private readonly IUnitTestRuntimeProvider _unitTestRuntimeProvider;
+        private readonly IAnalyticsEventProvider _analyticsEventProvider;
+        private readonly IAnalyticsTransmitter _analyticsTransmitter;
+        private readonly ITestRunnerManager _testRunnerManager;
+        private readonly IRuntimePluginTestExecutionLifecycleEventEmitter _runtimePluginTestExecutionLifecycleEventEmitter;
         private CultureInfo _defaultBindingCulture = CultureInfo.CurrentCulture;
 
         private ProgrammingLanguage _defaultTargetLanguage = ProgrammingLanguage.CSharp;
@@ -56,14 +61,17 @@ namespace TechTalk.SpecFlow.Infrastructure
             IUnitTestRuntimeProvider unitTestRuntimeProvider,
             IContextManager contextManager,
             IStepDefinitionMatchService stepDefinitionMatchService,
-            IDictionary<string, IStepErrorHandler> stepErrorHandlers,
             IBindingInvoker bindingInvoker,
             IObsoleteStepHandler obsoleteStepHandler,
             ICucumberMessageSender cucumberMessageSender,
             ITestResultFactory testResultFactory,
             ITestPendingMessageFactory testPendingMessageFactory,
             ITestUndefinedMessageFactory testUndefinedMessageFactory,
-            ITestRunResultCollector testRunResultCollector,
+            ITestRunResultCollector testRunResultCollector, 
+            IAnalyticsEventProvider analyticsEventProvider, 
+            IAnalyticsTransmitter analyticsTransmitter, 
+            ITestRunnerManager testRunnerManager,
+            IRuntimePluginTestExecutionLifecycleEventEmitter runtimePluginTestExecutionLifecycleEventEmitter,
             ITestObjectResolver testObjectResolver = null,
             IObjectContainer testThreadContainer = null) //TODO: find a better way to access the container
         {
@@ -76,7 +84,6 @@ namespace TechTalk.SpecFlow.Infrastructure
             _testTracer = testTracer;
             _stepFormatter = stepFormatter;
             _stepArgumentTypeConverter = stepArgumentTypeConverter;
-            _stepErrorHandlers = stepErrorHandlers?.Values.ToArray();
             _stepDefinitionMatchService = stepDefinitionMatchService;
             _testObjectResolver = testObjectResolver;
             TestThreadContainer = testThreadContainer;
@@ -86,6 +93,10 @@ namespace TechTalk.SpecFlow.Infrastructure
             _testPendingMessageFactory = testPendingMessageFactory;
             _testUndefinedMessageFactory = testUndefinedMessageFactory;
             _testRunResultCollector = testRunResultCollector;
+            _analyticsEventProvider = analyticsEventProvider;
+            _analyticsTransmitter = analyticsTransmitter;
+            _testRunnerManager = testRunnerManager;
+            _runtimePluginTestExecutionLifecycleEventEmitter = runtimePluginTestExecutionLifecycleEventEmitter;
         }
 
         public FeatureContext FeatureContext => _contextManager.FeatureContext;
@@ -97,6 +108,17 @@ namespace TechTalk.SpecFlow.Infrastructure
             if (_testRunnerStartExecuted)
             {
                 return;
+            }
+
+            try
+            {
+                var testAssemblyName = _testRunnerManager.TestAssembly.GetName().Name;
+                var projectRunningEvent = _analyticsEventProvider.CreateProjectRunningEvent(testAssemblyName);
+                _analyticsTransmitter.TransmitSpecFlowProjectRunningEvent(projectRunningEvent);
+            }
+            catch (Exception)
+            {
+                // catch all exceptions since we do not want to break anything
             }
 
             _testRunnerStartExecuted = true;
@@ -174,7 +196,18 @@ namespace TechTalk.SpecFlow.Infrastructure
         public virtual void OnScenarioStart()
         {
             _cucumberMessageSender.SendTestCaseStarted(_contextManager.ScenarioContext.ScenarioInfo);
-            FireScenarioEvents(HookType.BeforeScenario);
+            try
+            {
+                FireScenarioEvents(HookType.BeforeScenario);
+            }
+            catch (Exception ex)
+            {
+                if (_contextManager.ScenarioContext != null)
+                {
+                    _contextManager.ScenarioContext.ScenarioExecutionStatus = ScenarioExecutionStatus.TestError;
+                    _contextManager.ScenarioContext.TestError = ex;
+                }
+            }
         }
 
         public virtual void OnAfterLastStep()
@@ -282,6 +315,16 @@ namespace TechTalk.SpecFlow.Infrastructure
         {
             FireScenarioEvents(HookType.AfterStep);
         }
+        protected virtual void OnSkipStep()
+        {
+            _testTracer.TraceStepSkipped();
+
+            var skippedStepHandlers = _contextManager.ScenarioContext.ScenarioContainer.ResolveAll<ISkippedStepHandler>().ToArray();
+            foreach (var skippedStepHandler in skippedStepHandlers)
+            {
+                skippedStepHandler.Handle(_contextManager.ScenarioContext);
+            }
+        }
 
         #region Step/event execution
 
@@ -308,6 +351,15 @@ namespace TechTalk.SpecFlow.Infrastructure
             {
                 InvokeHook(_bindingInvoker, hookBinding, hookType);
             }
+
+            FireRuntimePluginTestExecutionLifecycleEvents(hookType);
+        }
+
+        private void FireRuntimePluginTestExecutionLifecycleEvents(HookType hookType)
+        {
+            //We pass a container corresponding the type of event
+            var container = GetHookContainer(hookType);
+            _runtimePluginTestExecutionLifecycleEventEmitter.RasiseExecutionLifecycleEvent(hookType, container);
         }
 
         protected IObjectContainer TestThreadContainer { get; }
@@ -371,16 +423,18 @@ namespace TechTalk.SpecFlow.Infrastructure
 
             BindingMatch match = null;
             object[] arguments = null;
+            TimeSpan duration = TimeSpan.Zero;
             try
             {
                 match = GetStepMatch(stepInstance);
                 contextManager.StepContext.StepInfo.BindingMatch = match;
                 contextManager.StepContext.StepInfo.StepInstance = stepInstance;
                 arguments = GetExecuteArguments(match);
+                
 
                 if (isStepSkipped)
                 {
-                    _testTracer.TraceStepSkipped();
+                    OnSkipStep();
                 }
                 else
                 {
@@ -388,7 +442,7 @@ namespace TechTalk.SpecFlow.Infrastructure
 
                     onStepStartExecuted = true;
                     OnStepStart();
-                    TimeSpan duration = ExecuteStepMatch(match, arguments);
+                    ExecuteStepMatch(match, arguments, out duration);
                     if (_specFlowConfiguration.TraceSuccessfulSteps)
                         _testTracer.TraceStepDone(match, arguments, duration);
                 }
@@ -421,7 +475,7 @@ namespace TechTalk.SpecFlow.Infrastructure
             }
             catch (Exception ex)
             {
-                _testTracer.TraceError(ex);
+                _testTracer.TraceError(ex, duration);
 
                 if (contextManager.ScenarioContext.ScenarioExecutionStatus < ScenarioExecutionStatus.TestError)
                 {
@@ -462,31 +516,9 @@ namespace TechTalk.SpecFlow.Infrastructure
             throw _errorProvider.GetMissingStepDefinitionError();
         }
 
-        protected virtual TimeSpan ExecuteStepMatch(BindingMatch match, object[] arguments)
+        protected virtual void ExecuteStepMatch(BindingMatch match, object[] arguments, out TimeSpan duration)
         {
-            TimeSpan duration = TimeSpan.Zero;
-            try
-            {
-                _bindingInvoker.InvokeBinding(match.StepBinding, _contextManager, arguments, _testTracer, out duration);
-            }
-            catch (Exception ex)
-            {
-                if (_stepErrorHandlers != null)
-                {
-                    StepFailureEventArgs stepFailureEventArgs = new StepFailureEventArgs(match.StepBinding, match.StepContext, ex);
-                    foreach (var stepErrorHandler in _stepErrorHandlers)
-                    {
-                        stepErrorHandler.OnStepFailure(this, stepFailureEventArgs);
-                    }
-
-                    if (stepFailureEventArgs.IsHandled)
-                        return duration;
-                }
-
-                throw;
-            }
-
-            return duration;
+            _bindingInvoker.InvokeBinding(match.StepBinding, _contextManager, arguments, _testTracer, out duration);
         }
 
         private void HandleBlockSwitch(ScenarioBlock block)

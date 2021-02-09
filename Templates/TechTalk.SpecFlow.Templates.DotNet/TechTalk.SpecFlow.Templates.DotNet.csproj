@@ -4,7 +4,7 @@
     <PackageType>Template</PackageType>
     <PackageId>SpecFlow.Templates.DotNet</PackageId>
     <Title>SpecFlow Templates for dotnet new</Title>
-    <Authors>TechTalk;Manuel Eiwen</Authors>
+    <Authors>$author$;Manuel Eiwen</Authors>
     <Description>Templates for projects using different unit test providers and Templates for SpecFlow files.</Description>
     <PackageTags>specflow;bdd;gherkin;cucumber;dotnet-new;templates</PackageTags>
 
@@ -14,11 +14,15 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- Because templates trigger NU5128, because they need a targetframework, but don't have files in the lib folder for it-->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**" />
     <Compile Remove="**\*" />
+    <None Include="$(SolutionDir)specflow-icon.png" Pack="true" PackagePath="images"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -49,4 +53,4 @@
     </Content>
   </ItemGroup>
 
-</Project>
+</Project> 

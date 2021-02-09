@@ -16,7 +16,7 @@ namespace TechTalk.SpecFlow.Analytics.AppInsights
         public string EventDateTime { get; set; }
 
         [DataMember(Name = "iKey")] 
-        public string InstrumentationKey => AppInsightsInstrumentationKey.Key;
+        public string InstrumentationKey { get; set; }
 
         [DataMember(Name = "data")]
         public TelemetryData TelemetryData { get; set; }
@@ -26,8 +26,9 @@ namespace TechTalk.SpecFlow.Analytics.AppInsights
 
         private const string DefaultValue = "undefined";
 
-        public AppInsightsEventTelemetry(IAnalyticsEvent analyticsEvent)
+        public AppInsightsEventTelemetry(IAnalyticsEvent analyticsEvent, string instrumentationKey)
         {
+            InstrumentationKey = instrumentationKey;
             DataTypeName = $"Microsoft.ApplicationInsights.{InstrumentationKey}.Event";
 
             EventDateTime = analyticsEvent.UtcDate.ToString("O");
@@ -53,6 +54,8 @@ namespace TechTalk.SpecFlow.Analytics.AppInsights
                         { "SpecFlowVersion", analyticsEvent.SpecFlowVersion },
                         { "UnitTestProvider", analyticsEvent.UnitTestProvider ?? DefaultValue },
                         { "IsBuildServer", analyticsEvent.IsBuildServer.ToString() },
+                        { "BuildServerName", analyticsEvent.BuildServerName ?? DefaultValue },
+                        { "IsDockerContainer", analyticsEvent.IsDockerContainer.ToString() },
                         { "HashedAssemblyName", analyticsEvent.HashedAssemblyName ?? DefaultValue },
                         { "TargetFrameworks", analyticsEvent.TargetFrameworks },
                         { "TargetFramework", analyticsEvent.TargetFramework },

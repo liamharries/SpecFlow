@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using TechTalk.SpecFlow.Analytics.AppInsights;
+using TechTalk.SpecFlow.CommonModels;
 
 namespace TechTalk.SpecFlow.Analytics
 {
@@ -17,20 +18,28 @@ namespace TechTalk.SpecFlow.Analytics
             _httpClient = httpClientWrapper.HttpClient;
         }
 
-        public async Task TransmitEvent(IAnalyticsEvent analyticsEvent)
+        public async Task<IResult> TransmitEvent(IAnalyticsEvent analyticsEvent, string instrumentationKey)
         {
             try
             {
-                var serializedEventTelemetry = _appInsightsEventSerializer.SerializeAnalyticsEvent(analyticsEvent);
-
-                using (var httpContent = new ByteArrayContent(serializedEventTelemetry))
-                {
-                    await _httpClient.PostAsync(_appInsightsDataCollectionEndPoint, httpContent);
-                }
+                await TransmitEventAsync(analyticsEvent, instrumentationKey);
+                return Result.Success();
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                //we don't care if we get any error during the sending
+                // we swallow the exception to not break the build when just the analytics could not be transmitted
+                // but we still return it inside a Failure to tell the outside world that something has failed
+                return Result.Failure(e);
+            }
+        }
+
+        public async Task TransmitEventAsync(IAnalyticsEvent analyticsEvent, string instrumentationKey)
+        {
+            var serializedEventTelemetry = _appInsightsEventSerializer.SerializeAnalyticsEvent(analyticsEvent, instrumentationKey);
+
+            using (var httpContent = new ByteArrayContent(serializedEventTelemetry))
+            {
+                await _httpClient.PostAsync(_appInsightsDataCollectionEndPoint, httpContent);
             }
         }
     }

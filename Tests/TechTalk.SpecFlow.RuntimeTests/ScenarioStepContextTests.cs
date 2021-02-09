@@ -282,11 +282,11 @@ namespace TechTalk.SpecFlow.RuntimeTests
         {
             var mockTracer = new Mock<ITestTracer>();
             var contextManager = ResolveContextManager(mockTracer.Object);
-            contextManager.InitializeFeatureContext(new FeatureInfo(new CultureInfo("en-US"), "F", null));
+            contextManager.InitializeFeatureContext(new FeatureInfo(new CultureInfo("en-US", false), string.Empty, "F", null));
 
             contextManager.InitializeStepContext(this.CreateStepInfo("I have called initialize once"));
             //// Do not call CleanupStepContext, in order to simulate an inconsistent state
-            contextManager.InitializeScenarioContext(new ScenarioInfo("the next scenario", "description of the next scenario"));
+            contextManager.InitializeScenarioContext(new ScenarioInfo("the next scenario", "description of the next scenario", null, null));
 
             var actualCurrentTopLevelStepDefinitionType = contextManager.CurrentTopLevelStepDefinitionType;
 

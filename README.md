@@ -1,14 +1,20 @@
 # SpecFlow - Cucumber for .NET
 
-SpecFlow is a pragmatic BDD solution for .NET. It uses the Gherkin specification language and integrates to Visual Studio. It provides efficient testing solution for the .NET-related platforms, like .NET Dekstop Framework, .NET Core and Mono.
+SpecFlow is a pragmatic BDD solution for .NET. It provides test automation for .NET (.NET Framework, .NET Core and Mono), based on the Gherkin specification language and integrates to Visual Studio.
 
-- Project website: [http://www.specflow.org](http://www.specflow.org)
-- Documentation: [http://www.specflow.org/documentation/](http://www.specflow.org/documentation/)
-- Discussion group: [http://groups.google.com/group/SpecFlow](http://groups.google.com/group/SpecFlow) 
+- Getting started using SpecFlow: [https://specflow.org/getting-started/](https://specflow.org/getting-started/) 
+- Project website: [https://www.specflow.org](https://www.specflow.org)
+- Documentation: [https://docs.specflow.org](https://docs.specflow.org)
+- Discussion group in our community: [https://specflow.org/community](https://specflow.org/community) 
 
-For questions please send them to the [Discussion group](http://groups.google.com/group/SpecFlow).
+For questions please post them in our [community discussion group](https://support.specflow.org/hc/en-us/community/topics).
 
-For issues/bugs please use the [issue tracker on GitHub](https://github.com/techtalk/SpecFlow/issues).
+For issues/bugs please use the [issue tracker on GitHub](https://github.com/SpecFlowOSS/SpecFlow/issues).
+
+Supported .NET Versions:
+
+- .NET Framework: >= 4.6.1
+- .NET Core: we are following the same support policy as Microsoft (<https://dotnet.microsoft.com/platform/support/policy/dotnet-core>)
 
 ## Build status
 Continuous integration: [![Build Status](https://dev.azure.com/specflow/SpecFlow/_apis/build/status/SpecFlow.CI?branchName=master)](https://dev.azure.com/specflow/SpecFlow/_build/latest?definitionId=2&branchName=master)
@@ -29,17 +35,17 @@ CI NuGet Package feed: https://www.myget.org/F/specflow/api/v3/index.json
 
 ## Contributing
 
-Developer Gitter channel:
-[![Join the chat at https://gitter.im/gasparnagy/specflow-dev](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gasparnagy/specflow-dev?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Developer Discord channel:
+[#contributing](https://go.specflow.org/join-contributing-on-discord)
 
 The main development happens on the master branch.
 
-If you are interested in contributing, there are some useful information on this page: [Contributing](https://github.com/techtalk/SpecFlow/wiki/Contributing).
+If you are interested in contributing, there is some useful information on this page: [Contributing](https://github.com/SpecFlowOSS/SpecFlow/blob/master/CONTRIBUTING.md).
 
 ## Writing plugins 
 
-Plugin- Developer- Gitter channel: [![Gitter](https://badges.gitter.im/techtalk/specflow-plugin-dev.svg)](https://gitter.im/techtalk/specflow-plugin-dev?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+Plugin- Developer- Discord channel: [#plugin-development](https://go.specflow.org/join-plugin-development-on-discord)
 
 ## Copyright
 
-Copyright (c) TechTalk. See [LICENSE](http://go.specflow.org/license) for details.
+Copyright (c) SpecFlow Team. See [LICENSE](https://go.specflow.org/license) for details.

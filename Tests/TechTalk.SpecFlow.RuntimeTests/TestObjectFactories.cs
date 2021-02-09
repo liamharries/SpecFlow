@@ -35,8 +35,8 @@ namespace TechTalk.SpecFlow.RuntimeTests
             var instance = new RuntimeTestsContainerBuilder(defaultDependencyProvider);
             var testThreadContainer = CreateDefaultTestThreadContainer(configurationHolder, null, null, instance);
 
-            CultureInfo cultureInfo = new CultureInfo("en-US");
-            return instance.CreateFeatureContainer(testThreadContainer, new FeatureInfo(cultureInfo, "test feature info", "", ProgrammingLanguage.CSharp));
+            CultureInfo cultureInfo = new CultureInfo("en-US", false);
+            return instance.CreateFeatureContainer(testThreadContainer, new FeatureInfo(cultureInfo, "test feature path", "test feature info", "", ProgrammingLanguage.CSharp));
         }
 
         private static IObjectContainer CreateDefaultGlobalContainer(IRuntimeConfigurationProvider configurationProvider, Action<IObjectContainer> registerGlobalMocks, ContainerBuilder instance)

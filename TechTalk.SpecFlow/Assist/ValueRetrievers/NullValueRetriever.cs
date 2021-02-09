@@ -5,18 +5,18 @@ namespace TechTalk.SpecFlow.Assist.ValueRetrievers
 {
     public class NullValueRetriever : IValueRetriever
     {
-        private readonly string nullText;
+        private readonly string _nullText;
 
         public NullValueRetriever(string nullText)
         {
-            this.nullText = nullText;
+            _nullText = nullText;
         }
 
         public bool CanRetrieve(KeyValuePair<string, string> keyValuePair, Type targetType, Type propertyType)
         {
             return IsNullableType(propertyType) &&
                    keyValuePair.Value != null &&
-                   string.Compare(keyValuePair.Value.Trim(), nullText, StringComparison.InvariantCultureIgnoreCase) == 0;
+                   string.Compare(keyValuePair.Value.Trim(), _nullText, StringComparison.InvariantCultureIgnoreCase) == 0;
         }
 
         public object Retrieve(KeyValuePair<string, string> keyValuePair, Type targetType, Type propertyType)

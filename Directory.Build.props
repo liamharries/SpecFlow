@@ -1,51 +1,61 @@
 <Project>
-  <Import Project="macos.props" />
-
   <PropertyGroup>
-    <LangVersion>7.3</LangVersion>
-   
-    <TechTalk_Year>$([System.DateTime]::get_Now().get_Year())</TechTalk_Year>
-    <TechTalkCopyright>Copyright © 2009-$(TechTalk_Year) TechTalk</TechTalkCopyright>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    
+    <SpecFlow_Copyright>Copyright © SpecFlow Team</SpecFlow_Copyright>
+    <SpecFlow_Authors>SpecFlow Team</SpecFlow_Authors>
+    <SpecFlow_Owners>SpecFlow Team</SpecFlow_Owners>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.65" PrivateAssets="all"/>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="3.3.37" PrivateAssets="all"/>
     <None Include="$(SolutionDir)/LICENSE.txt" Pack="true" PackagePath=""/>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>
-    <Authors>TechTalk</Authors>
-    <Company>TechTalk</Company>
+    <Authors>$(SpecFlow_Authors)</Authors>
+    <Company>Tricentis</Company>
     <Product />
-    <PackageProjectUrl>http://www.specflow.org</PackageProjectUrl>
-    <PackageIconUrl>http://go.specflow.org/specflow-nuget-icon</PackageIconUrl>
-    <RepositoryUrl>https://github.com/techtalk/SpecFlow</RepositoryUrl>
+    <PackageProjectUrl>https://www.specflow.org</PackageProjectUrl>
+    <PackageIcon>images/specflow-icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/SpecFlowOSS/SpecFlow</RepositoryUrl>
     <PackageTags>specflow bdd gherkin cucumber</PackageTags>
     <Description>SpecFlow aims at bridging the communication gap between domain experts and developers by binding business readable behavior specifications to the underlying implementation. Our mission is to provide a pragmatic and frictionless approach to Acceptance Test Driven Development and Behavior Driven Development for .NET projects today."</Description>
-    <Copyright>$(TechTalkCopyright)</Copyright>
+    <Copyright>$(SpecFlow_Copyright)</Copyright>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup>
-    <SpecFlow_FullFramework_Runtime_TFM>net45</SpecFlow_FullFramework_Runtime_TFM>
+    <SpecFlow_FullFramework_TFM>net461</SpecFlow_FullFramework_TFM>
+
+    <SpecFlow_Net5_TFM>net5.0</SpecFlow_Net5_TFM>
+
+    <SpecFlow_FullFramework_Runtime_TFM>$(SpecFlow_FullFramework_TFM)</SpecFlow_FullFramework_Runtime_TFM>
     <SpecFlow_Core_Runtime_TFM>netstandard2.0</SpecFlow_Core_Runtime_TFM>
 
-    <SpecFlow_FullFramework_Generator_TFM>net471</SpecFlow_FullFramework_Generator_TFM>
-    <SpecFlow_Core_Generator_TFM>netstandard2.0</SpecFlow_Core_Generator_TFM>
+    <SpecFlow_FullFramework_Generator_TFM>$(SpecFlow_FullFramework_TFM)</SpecFlow_FullFramework_Generator_TFM>
+    <SpecFlow_Core_Generator_TFM>netcoreapp2.1</SpecFlow_Core_Generator_TFM>
 
-    <SpecFlow_FullFramework_Test_TFM>net471</SpecFlow_FullFramework_Test_TFM>
-    <SpecFlow_Core_Test_TFM>netcoreapp2.1;netcoreapp3.0</SpecFlow_Core_Test_TFM>
+    <SpecFlow_FullFramework_Test_TFM>$(SpecFlow_FullFramework_TFM)</SpecFlow_FullFramework_Test_TFM>
+    <SpecFlow_Core_Test_TFM>netcoreapp2.1;netcoreapp3.1;net5.0</SpecFlow_Core_Test_TFM>
 
-    <SpecFlow_FullFramework_Specs_TFM>net471</SpecFlow_FullFramework_Specs_TFM>
+    <SpecFlow_FullFramework_Specs_TFM>$(SpecFlow_FullFramework_TFM)</SpecFlow_FullFramework_Specs_TFM>
+    <SpecFlow_Net5_Specs_TFM>$(SpecFlow_Net5_TFM)</SpecFlow_Net5_Specs_TFM>
 
-    <SpecFlow_FullFramework_Tools_TFM>net471</SpecFlow_FullFramework_Tools_TFM>
-    <SpecFlow_Core_Tools_TFM>netcoreapp2.0</SpecFlow_Core_Tools_TFM>
+    <SpecFlow_FullFramework_Tools_TFM>$(SpecFlow_FullFramework_TFM)</SpecFlow_FullFramework_Tools_TFM>
+    <SpecFlow_Core_Tools_TFM>netcoreapp2.1</SpecFlow_Core_Tools_TFM>    
+    <SpecFlow_Net5_Tools_TFM>$(SpecFlow_Net5_TFM)</SpecFlow_Net5_Tools_TFM>
 
-    <SpecFlow_Runtime_TFM>$(SpecFlow_FullFramework_Runtime_TFM);$(SpecFlow_Core_Runtime_TFM)</SpecFlow_Runtime_TFM>
-    <SpecFlow_Generator_TFM>$(SpecFlow_FullFramework_Generator_TFM);$(SpecFlow_Core_Generator_TFM)</SpecFlow_Generator_TFM>
+    <SpecFlow_Runtime_TFM>$(SpecFlow_FullFramework_Runtime_TFM);$(SpecFlow_Core_Runtime_TFM);$(SpecFlow_Net5_TFM)</SpecFlow_Runtime_TFM>
+    <SpecFlow_Generator_TFM>$(SpecFlow_FullFramework_Generator_TFM);$(SpecFlow_Core_Generator_TFM);$(SpecFlow_Net5_TFM)</SpecFlow_Generator_TFM>
     <SpecFlow_Test_TFM>$(SpecFlow_FullFramework_Test_TFM);$(SpecFlow_Core_Test_TFM)</SpecFlow_Test_TFM>
-    <SpecFlow_Specs_TFM>$(SpecFlow_FullFramework_Specs_TFM)</SpecFlow_Specs_TFM>
-    <SpecFlow_Tools_TFM>$(SpecFlow_FullFramework_Tools_TFM);$(SpecFlow_Core_Tools_TFM)</SpecFlow_Tools_TFM>
+    <SpecFlow_Specs_TFM>$(SpecFlow_Net5_Specs_TFM)</SpecFlow_Specs_TFM>
+    <SpecFlow_Tools_TFM>$(SpecFlow_FullFramework_Tools_TFM);$(SpecFlow_Core_Tools_TFM);$(SpecFlow_Net5_Tools_TFM)</SpecFlow_Tools_TFM>
 
     <SpecFlow_EnableStrongNameSigning>true</SpecFlow_EnableStrongNameSigning>
   </PropertyGroup>

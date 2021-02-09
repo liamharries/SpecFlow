@@ -2,6 +2,10 @@
 
   <Import Project="SpecFlow.Tools.MsBuild.Generation.props" Condition="'$(_SpecFlowPropsImported)'==''"/>
 
+  <PropertyGroup>
+    <_SpecFlow_Tools_MsBuild_Generation_Imported>true</_SpecFlow_Tools_MsBuild_Generation_Imported>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(BuildServerMode)' == ''">
     <BuildServerMode Condition="'$(BuildingInsideVisualStudio)'=='true'">false</BuildServerMode>
     <BuildServerMode Condition="'$(BuildingInsideVisualStudio)'!='true'">true</BuildServerMode>
@@ -44,7 +48,7 @@
              DesignTime="true"
              Visible="true"
              Condition="'$(EnableDefaultCompileItems)' == 'true'" />
-    
+
   </ItemGroup>
 
 
@@ -67,7 +71,7 @@
     <Message Text="SpecFlowFeatureFiles: @(SpecFlowFeatureFiles)" Importance="high" Condition="'$(VerboseOutput)' == 'true'" />
 
     <Error
-      Text="SpecFlow designer codebehind generation is not compatible with MSBuild codebehind generation. The custom tool must be removed from the file. See http://www.specflow.org/documentation/Generate-Tests-from-MsBuild"
+      Text="SpecFlow designer codebehind generation is not compatible with MSBuild codebehind generation. The custom tool must be removed from the file. See https://www.specflow.org/documentation/Generate-Tests-from-MsBuild"
       File="@(None)"
       Condition="%(None.Extension) == '.feature' AND %(None.Generator) == 'SpecFlowSingleFileGenerator'"/>
 
@@ -143,6 +147,11 @@
     <ItemGroup Condition="'$(UsingMicrosoftNETSdk)' != 'true'">
       <Compile Include="@(SpecFlowGeneratedFiles)" Exclude="@(Compile)" />
     </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="@(SpecFlowFeatureFiles)" />
+    </ItemGroup>
+    
   </Target>
 
   <Target Name="AfterUpdateFeatureFilesInProject" DependsOnTargets="IncludeCodeBehindFilesInProject">
